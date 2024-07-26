@@ -1,6 +1,8 @@
 package gruzilkin.iot.controllers
 
+import gruzilkin.iot.entities.Device
 import gruzilkin.iot.repositories.DeviceRepository
+import org.hamcrest.Matchers.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -29,6 +31,11 @@ class DevicesControllerTest {
             param("name", "test")
         }.andExpect {
             status { isOk() }
+            model {
+                attributeExists("devices")
+                attribute("devices", hasSize<List<Device>>(1))
+                attribute("devices", hasItem(Device(id=1, userId = 1, name = "test")))
+            }
         }.andDo {
             print()
         }
