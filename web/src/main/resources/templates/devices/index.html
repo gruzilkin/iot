@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="https://unpkg.com/htmx.org@2.0.1"></script>
+    <title>Devices</title>
+
+    <script th:inline="javascript">
+        var csrfToken = /*[[${_csrf.token}]]*/ 'token';
+        var csrfHeader = /*[[${_csrf.headerName}]]*/ 'header';
+
+        document.addEventListener("htmx:configRequest", function (evt) {
+            if (evt.detail.verb !== "get") {
+              evt.detail.headers[csrfHeader] = csrfToken;
+            }
+          });
+    </script>
+</head>
+<body>
+<h1>Welcome, <span th:text="${name}">Name</span>!</h1>
+
+<div id="deviceList" th:fragment="device-list">
+    <h2>Devices</h2>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+        </tr>
+        <tr th:each="device : ${devices}">
+            <td th:text="${device.id}">Id</td>
+            <td th:text="${device.name}">Name</td>
+            <td>
+                <a th:attr="hx-delete=@{/devices/{id}(id=${device.id})}" hx-target="#deviceList" hx-swap="outerHTML">Delete</a>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div>
+    <h2>Add Device</h2>
+    <form hx-post="/devices" hx-target="#deviceList" hx-swap="outerHTML" hx-on--after-request="this.reset()">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required="required"/>
+        <button type="submit">Add</button>
+    </form>
+</div>
+
+</body>
+</html>

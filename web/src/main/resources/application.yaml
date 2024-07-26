@@ -8,3 +8,9 @@ spring:
           github:
             clientId: ${GITHUB_CLIENT_ID}
             clientSecret: ${GITHUB_CLIENT_SECRET}
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
