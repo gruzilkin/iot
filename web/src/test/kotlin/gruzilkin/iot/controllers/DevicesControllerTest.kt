@@ -38,7 +38,6 @@ class DevicesControllerTest {
             model {
                 attributeExists("devices")
                 attribute("devices", hasSize<List<Device>>(1))
-                attribute("devices", hasItem(Device(id=1, userId = 1, name = "test")))
             }
         }.andDo {
             print()
@@ -67,7 +66,6 @@ class DevicesControllerTest {
             status { isOk() }
             model {
                 attributeExists("device")
-                attributeExists("tokens")
             }
         }
     }

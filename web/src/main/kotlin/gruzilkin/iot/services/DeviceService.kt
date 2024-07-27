@@ -8,4 +8,7 @@ interface DeviceService {
     fun findById(user: Principal, id: Long): Device?
     fun save(user: Principal, name: String): Device
     fun deleteById(user: Principal, id: Long)
+
+    fun generateAndSaveToken(user: Principal, id: Long) : String
+    fun deleteToken(user: Principal, id: Long, token: String)
 }

@@ -13,5 +13,8 @@ data class Device(
     val userId: Long = 0,
 
     @Column
-    val name: String = ""
+    val name: String = "",
+
+    @OneToMany(mappedBy = "deviceId", cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    val tokens: MutableList<Token> = mutableListOf()
 )

@@ -12,7 +12,7 @@
             <th>Created At</th>
             <th>Valid Until</th>
         </tr>
-        <tr th:each="token : ${tokens}">
+        <tr th:each="token : ${device.tokens}">
             <td th:text="${token.token}">Token</td>
             <td th:text="${token.createdAt}">Created At</td>
             <td th:text="${token.validUntil}">Valid Until</td>

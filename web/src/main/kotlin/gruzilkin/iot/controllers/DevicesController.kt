@@ -1,7 +1,5 @@
 package gruzilkin.iot.controllers
 
-import gruzilkin.iot.entities.Token
-import gruzilkin.iot.repositories.TokenRepository
 import gruzilkin.iot.services.DeviceService
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
@@ -13,7 +11,6 @@ import java.security.Principal
 @Controller
 @RequestMapping("/devices")
 class DevicesController(
-    val tokenRepository: TokenRepository,
     val deviceService: DeviceService
 ) {
     @GetMapping
@@ -27,7 +24,6 @@ class DevicesController(
     fun getDevice(user: Principal, @PathVariable("id") id: Long, model: Model) : String {
         val device = deviceService.findById(user, id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found")
         model.addAttribute("device", device)
-        model.addAttribute("tokens", tokenRepository.findByDeviceId(id))
         return "devices/edit :: device-edit"
     }
 
@@ -47,13 +43,13 @@ class DevicesController(
 
     @PostMapping("/{id}/tokens")
     fun addToken(user: Principal, @PathVariable("id") deviceId: Long, model: Model) : String {
-        tokenRepository.save(Token(deviceId))
+        deviceService.generateAndSaveToken(user, deviceId)
         return "redirect:/devices/$deviceId"
     }
 
     @DeleteMapping("/{deviceId}/tokens/{tokenId}")
     fun deleteToken(user: Principal, @PathVariable("deviceId") deviceId: Long, @PathVariable("tokenId") tokenId: String, model: Model) : String {
-        tokenRepository.deleteById(tokenId)
+        deviceService.deleteToken(user, deviceId, tokenId)
         return getDevice(user, deviceId, model)
     }
 }

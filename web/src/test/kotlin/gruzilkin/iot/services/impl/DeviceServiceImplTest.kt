@@ -40,9 +40,9 @@ class DeviceServiceImplTest {
         val user1 = Principal { "1" }
         val user2 = Principal { "2" }
         val device = deviceService.save(user1, "device_1")
-        deviceService.deleteById(user2, device.id!!)
-        val readDevice = deviceService.findById(user1, device.id!!)
-        assertEquals(device, readDevice)
+        assertFailsWith<IllegalArgumentException> {
+            deviceService.deleteById(user2, device.id!!)
+        }
     }
 
     @Test
@@ -53,5 +53,19 @@ class DeviceServiceImplTest {
         deviceService.deleteById(user1, device.id!!)
         val readDevice = deviceService.findById(user1, device.id!!)
         assertNull(readDevice)
+    }
+
+    @Test
+    @DirtiesContext
+    fun `delete token green path`() {
+        val user1 = Principal { "1" }
+        var device = deviceService.save(user1, "device_1")
+        val id = device.id!!
+
+        val token = deviceService.generateAndSaveToken(user1, id)
+        deviceService.deleteToken(user1, id, token)
+
+        val readDevice = deviceService.findById(user1, id)!!
+        assertTrue { readDevice.tokens.isEmpty() }
     }
 }
