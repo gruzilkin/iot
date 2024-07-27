@@ -1,45 +1,47 @@
 package gruzilkin.iot.controllers
 
-import gruzilkin.iot.entities.Device
 import gruzilkin.iot.entities.Token
-import gruzilkin.iot.repositories.DeviceRepository
 import gruzilkin.iot.repositories.TokenRepository
+import gruzilkin.iot.services.DeviceService
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 import java.security.Principal
 
 @Controller
 @RequestMapping("/devices")
 class DevicesController(
-    val devicesRepository: DeviceRepository,
-    val tokenRepository: TokenRepository
+    val tokenRepository: TokenRepository,
+    val deviceService: DeviceService
 ) {
     @GetMapping
     fun index(principal: Principal, model: Model): String {
         model.addAttribute("name", principal.name)
-        model.addAttribute("devices", devicesRepository.findAllByUserIdOrderById(principal.name.toLong()))
+        model.addAttribute("devices", deviceService.findAll(principal))
         return "devices/index"
     }
 
     @GetMapping("/{id}")
     fun getDevice(user: Principal, @PathVariable("id") id: Long, model: Model) : String {
-        model.addAttribute("device", devicesRepository.findById(id).get())
+        val device = deviceService.findById(user, id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found")
+        model.addAttribute("device", device)
         model.addAttribute("tokens", tokenRepository.findByDeviceId(id))
         return "devices/edit :: device-edit"
     }
 
     @PostMapping
     fun addDevice(user: Principal, name: String, model: Model) : String {
-        devicesRepository.save(Device(userId = user.name.toLong(), name = name))
-        model.addAttribute("devices", devicesRepository.findAllByUserIdOrderById(user.name.toLong()))
+        deviceService.save(user, name = name)
+        model.addAttribute("devices", deviceService.findAll(user))
         return "devices/index :: device-list"
     }
 
     @DeleteMapping("/{id}")
     fun deleteDevice(user: Principal, @PathVariable("id") id: Long, model: Model) : String {
-        devicesRepository.deleteById(id)
-        model.addAttribute("devices", devicesRepository.findAllByUserIdOrderById(user.name.toLong()))
+        deviceService.deleteById(user, id)
+        model.addAttribute("devices", deviceService.findAll(user))
         return "devices/index :: device-list"
     }
 

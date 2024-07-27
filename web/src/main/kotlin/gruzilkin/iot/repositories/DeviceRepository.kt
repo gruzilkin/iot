@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface DeviceRepository : JpaRepository<Device, Long> {
     fun findAllByUserIdOrderById(userId: Long): List<Device>
+    fun findByIdAndUserId(id: Long, userId: Long): Device?
+    fun existsByIdAndUserId(id: Long, userId: Long): Boolean
 }
