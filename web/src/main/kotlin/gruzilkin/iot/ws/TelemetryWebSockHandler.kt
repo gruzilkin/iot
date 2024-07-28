@@ -11,6 +11,5 @@ class TelemetryWebSockHandler(val tokenRepository: TokenRepository) : TextWebSoc
     override fun handleTextMessage(webSocketSession: WebSocketSession, message: TextMessage) {
         val deviceId = webSocketSession.attributes["deviceId"] as Long
         println("[$deviceId]Received message: $message")
-        webSocketSession.sendMessage(TextMessage("reply to device $deviceId with $message"))
     }
 }
