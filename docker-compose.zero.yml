@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  zero:
+    build: ./zero
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    devices:
+      - "/dev/i2c-1:/dev/i2c-1"
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"

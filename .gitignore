@@ -3,3 +3,5 @@
 
 .env
 **/application-dev.yml
+
+**/.DS_Store
