@@ -11,14 +11,14 @@ data class SensorData(
     val id: Int? = null,
 
     @Column(name = "device_id")
-    val deviceId: Int,
+    val deviceId: Long = 0,
 
     @Column(name = "sensor_name")
-    val sensorName: String,
+    val sensorName: String = "",
 
     @Column(name = "sensor_value")
-    val sensorValue: Double,
+    val sensorValue: Double = 0.0,
 
     @Column(name = "received_at")
-    val receivedAt: LocalDateTime
+    val receivedAt: LocalDateTime = LocalDateTime.now()
 )

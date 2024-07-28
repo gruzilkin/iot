@@ -17,7 +17,7 @@ class TelemetryWebSockHandler(val sensorDataRepository: SensorDataRepository) : 
         for ((key, value) in payload) {
             sensorDataRepository.save(
                 SensorData(
-                    deviceId = deviceId.toInt(),
+                    deviceId = deviceId,
                     sensorName = key,
                     sensorValue = value.toDouble(),
                     receivedAt = java.time.LocalDateTime.now()
