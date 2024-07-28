@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TelemetryWebSockHandlerTest {
@@ -40,7 +41,7 @@ class TelemetryWebSockHandlerTest {
         val user = Principal { "1" }
         val device = deviceService.save(user, "test")
         val token = deviceService.generateAndSaveToken(user, device.id!!)
-        val message = """{"ppm":"414"}"""
+        val message = """{"ppm": 414.1}"""
 
         // web socket client setup
         val handler = object : TextWebSocketHandler() {
@@ -73,7 +74,7 @@ class TelemetryWebSockHandlerTest {
 
         // assert the saved data
         assertEquals("ppm", savedData!!.sensorName)
-        assertEquals(414.0, savedData!!.sensorValue)
+        assertTrue { Math.abs(savedData!!.sensorValue - 414.1) < 1e-6 }
         assertEquals(device.id, savedData!!.deviceId)
     }
 }

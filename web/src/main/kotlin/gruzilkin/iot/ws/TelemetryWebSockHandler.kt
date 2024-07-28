@@ -12,7 +12,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler
 class TelemetryWebSockHandler(val sensorDataRepository: SensorDataRepository) : TextWebSocketHandler() {
     override fun handleTextMessage(webSocketSession: WebSocketSession, message: TextMessage) {
         val deviceId = webSocketSession.attributes["deviceId"] as Long
-        val payload: Map<String, String> = Json.decodeFromString(message.payload)
+        val payload: Map<String, Double> = Json.decodeFromString(message.payload)
 
         for ((key, value) in payload) {
             sensorDataRepository.save(
