@@ -3,15 +3,10 @@ version: '3.8'
 services:
   zero:
     build: ./zero
-    ports:
-      - "5678:5678"
     env_file:
-      - .env.default
       - .env
     environment:
-      - RABBITMQ_HOST=gruzilkin.duckdns.org
       - PYTHONUNBUFFERED=1
-      - DEVICE_ID=zero
     devices:
       - "/dev/i2c-1:/dev/i2c-1"
     restart: always
