@@ -1,6 +1,7 @@
 import os, json, asyncio
-import aio_pika
 import board, busio, adafruit_scd30, adafruit_sgp40
+import websockets
+
 
 i2c = busio.I2C(board.SCL, board.SDA, frequency=50000)
 scd = adafruit_scd30.SCD30(i2c)
@@ -9,33 +10,27 @@ sgp = adafruit_sgp40.SGP40(i2c)
 temperature, humidity = None, None
 
 async def sender(queue):
-    host = os.environ['RABBITMQ_HOST']
-    print(f"RabbitMQ at {host}")
-    device_id = os.environ['DEVICE_ID']
-    print(f"Device ID is {device_id}")
+    host = os.environ['HOST']
+    bearer = os.environ['BEARER']
 
-    user = os.environ['RABBITMQ_USER']
-    password = os.environ['RABBITMQ_PASS']
+    url = f"ws://{host}/ws/telemetry"
+    print(f"Connecting to {url}")
 
-    connection =  await aio_pika.connect(host=host, login=user, password=password)
-    async with connection:
-        channel = await connection.channel()
-        async with channel:
-            topic = await channel.get_exchange("amq.topic")
-            while True:
-                name, data = await queue.get()
-                await topic.publish(
-                    aio_pika.Message(body=json.dumps(data).encode()),
-                    routing_key=f"sensor.{name}.{device_id}")
-                print(data)
+    async with websockets.connect(
+            url, extra_headers={"Authorization": f"Bearer {bearer}"}
+    ) as websocket:
+        while True:
+            name, data = await queue.get()
+            message = { name: data}
+            await websocket.send(json.dumps(message))
+            print(f"Sent: {message}")
 
 async def read_sgp40(queue):
     while True:
         if temperature and humidity:
             voc_index = sgp.measure_index(temperature=temperature, relative_humidity=humidity)
             if voc_index != 0:
-                data = {"voc":voc_index}
-                await queue.put(("sgp40", data))
+                await queue.put(("voc", voc_index))
         await asyncio.sleep(1)
 
 async def read_scd30(queue):
@@ -44,8 +39,8 @@ async def read_scd30(queue):
             global temperature, humidity
             temperature = scd.temperature
             humidity = scd.relative_humidity
-            data = {"ppm":scd.CO2, "temperature":scd.temperature, "humidity":scd.relative_humidity}
-            await queue.put(("scd30", data))
+            await queue.put(("temperature", temperature))
+            await queue.put(("humidity", humidity))
         await asyncio.sleep(2.1)
 
 def init_sensors():
