@@ -1,19 +1,11 @@
 spring:
   application:
     name: iot
-  security:
-    oauth2:
-      client:
-        registration:
-          github:
-            clientId: ${GITHUB_CLIENT_ID}
-            clientSecret: ${GITHUB_CLIENT_SECRET}
   jpa:
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-
 logging:
   level:
     org:

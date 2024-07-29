@@ -1,5 +1,13 @@
 version: '3.8'
 services:
+  queue:
+    image: rabbitmq:3.13
+    env_file:
+      - .env
+    volumes:
+      - queue_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
   db:
     build: ./db
     ports:
@@ -10,11 +18,14 @@ services:
         - db_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  iot:
+  web:
     build:
       context: ./web
     env_file:
       - .env
+    environment:
+      - SPRING_RABBITMQ_HOST=queue
+      - SPRING_RABBITMQ_PORT=5672
     ports:
       - "8080:8080"
       - "5005:5005"
@@ -24,3 +35,4 @@ services:
 
 volumes:
     db_data:
+    queue_data:

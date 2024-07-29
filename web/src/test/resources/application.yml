@@ -1,4 +1,11 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: mock
+            clientSecret: mock
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driverClassName: org.h2.Driver
@@ -6,6 +13,3 @@ spring:
     password:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
-app:
-  ws:
-    replyWithOk: true
