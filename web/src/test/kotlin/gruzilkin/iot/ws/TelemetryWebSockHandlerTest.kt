@@ -1,17 +1,14 @@
 package gruzilkin.iot.ws
 
-import gruzilkin.iot.entities.SensorData
 import gruzilkin.iot.repositories.SensorDataRepository
 import gruzilkin.iot.services.DeviceService
-import org.mockito.kotlin.any
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketHttpHeaders
+import org.springframework.web.socket.WebSocketMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.client.standard.StandardWebSocketClient
 import org.springframework.web.socket.handler.TextWebSocketHandler
@@ -28,7 +25,7 @@ class TelemetryWebSockHandlerTest {
     @LocalServerPort
     var port: Int = 0
 
-    @MockBean
+    @Autowired
     lateinit var sensorDataRepository: SensorDataRepository
 
     @Autowired
@@ -43,10 +40,16 @@ class TelemetryWebSockHandlerTest {
         val token = deviceService.generateAndSaveToken(user, device.id!!)
         val message = """{"ppm": 414.1}"""
 
+        val latch = CountDownLatch(1)
+
         // web socket client setup
         val handler = object : TextWebSocketHandler() {
             override fun afterConnectionEstablished(session: WebSocketSession) {
                 session.sendMessage(TextMessage(message))
+            }
+
+            override fun handleMessage(session: WebSocketSession, message: WebSocketMessage<*>) {
+                latch.countDown()
                 session.close()
             }
         }
@@ -57,24 +60,18 @@ class TelemetryWebSockHandlerTest {
             }
         }
 
-        // mock sensorDataRepository.save and inject a latch to wait for the save operation
-        val latch = CountDownLatch(1)
-        var savedData: SensorData? = null
-        whenever(sensorDataRepository.save(any<SensorData>())).thenAnswer { invocation ->
-            savedData = invocation.getArgument(0)
-            latch.countDown()
-            savedData
-        }
-
         // finally execute the call with everything ready
         StandardWebSocketClient().execute(handler, header, url)
 
         // websocket call is async so we wait for repository call
         latch.await(5, TimeUnit.SECONDS)
 
+        val data = sensorDataRepository.findAll()
+
         // assert the saved data
-        assertEquals("ppm", savedData!!.sensorName)
-        assertTrue { Math.abs(savedData!!.sensorValue - 414.1) < 1e-6 }
-        assertEquals(device.id, savedData!!.deviceId)
+        assertEquals(1, data.size)
+        assertEquals("ppm", data[0].sensorName)
+        assertTrue { Math.abs(data[0].sensorValue - 414.1) < 1e-6 }
+        assertEquals(device.id, data[0].deviceId)
     }
 }
