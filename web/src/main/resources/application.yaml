@@ -6,6 +6,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+server:
+  forward-headers-strategy: NATIVE
 logging:
   level:
     org:
