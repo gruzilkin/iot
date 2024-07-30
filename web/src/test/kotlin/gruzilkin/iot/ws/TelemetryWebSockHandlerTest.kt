@@ -85,4 +85,30 @@ class TelemetryWebSockHandlerTest : BaseTestClass() {
         assertTrue { Math.abs(data[0].sensorValue - 414.1) < 1e-6 }
         assertEquals(device.id, data[0].deviceId)
     }
+
+    @Test
+    @DirtiesContext
+    fun `websocket rejects connection without authentication`() {
+        val latch = CountDownLatch(1)
+
+        val url = URI("ws://localhost:$port/ws/telemetry")
+        val header = object : WebSocketHttpHeaders() {
+            init {
+                add("Authorization", "Bearer non-existing-token")
+            }
+        }
+
+        var errorMessage: String? = null
+        StandardWebSocketClient().execute(TextWebSocketHandler(), header, url).exceptionally { e ->
+            errorMessage = e.message
+            latch.countDown()
+            null
+        }.get()
+
+        latch.await(5, TimeUnit.SECONDS)
+
+        assertTrue {
+            errorMessage?.contains("403") ?: false
+        }
+    }
 }
