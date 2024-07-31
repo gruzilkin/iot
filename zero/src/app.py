@@ -13,7 +13,7 @@ async def sender(queue):
     host = os.environ['HOST']
     bearer = os.environ['BEARER']
 
-    url = f"ws://{host}/ws/telemetry"
+    url = f"{host}/ws/telemetry"
     print(f"Connecting to {url}")
 
     async with websockets.connect(
@@ -41,6 +41,7 @@ async def read_scd30(queue):
             humidity = scd.relative_humidity
             await queue.put(("temperature", temperature))
             await queue.put(("humidity", humidity))
+            await queue.put(("ppm", scd.CO2))
         await asyncio.sleep(2.1)
 
 def init_sensors():
