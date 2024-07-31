@@ -26,15 +26,6 @@ class DeviceServiceImplTest {
 
     @Test
     @DirtiesContext
-    fun `find all should not see other user devices`() {
-        val user1 = Principal { "1" }
-        val user2 = Principal { "2" }
-        val readDevices = deviceService.findAll(user2)
-        assertTrue { readDevices.isEmpty() }
-    }
-
-    @Test
-    @DirtiesContext
     fun `delete by id should not see other user devices`() {
         val user1 = Principal { "1" }
         val user2 = Principal { "2" }

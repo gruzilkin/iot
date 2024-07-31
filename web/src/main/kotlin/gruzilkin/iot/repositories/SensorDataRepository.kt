@@ -1,6 +1,7 @@
 package gruzilkin.iot.repositories
 
 import gruzilkin.iot.entities.SensorData
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
@@ -15,5 +16,5 @@ interface SensorDataRepository : JpaRepository<SensorData, Int> {
         val sensorValue: Double
         val receivedAt: LocalDateTime
     }
-    fun findByDeviceIdAndSensorName(deviceId: Long, sensorName: String): List<SensorDataProjection>
+    fun findByDeviceIdAndSensorName(deviceId: Long, sensorName: String, sort: Sort): List<SensorDataProjection>
 }

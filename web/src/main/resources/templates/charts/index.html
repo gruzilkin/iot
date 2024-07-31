@@ -17,5 +17,131 @@
 <script th:inline="javascript">
     var chartData = {temperature: [], humidity: [], ppm: [], voc: []}
     chartData.temperature = [[${temperature}]]
+    chartData.humidity = [[${humidity}]]
+    chartData.ppm = [[${ppm}]]
+    chartData.voc = [[${voc}]]
+</script>
+
+<script type="application/javascript">
+function renderChart() {
+    setTimeout(function () {
+        chart.setOption({
+            series: [
+                {
+                    data: chartData.temperature
+                },
+                {
+                    data: chartData.humidity
+                },
+                {
+                    data: chartData.ppm
+                },
+                {
+                    data: chartData.voc
+                }
+            ]
+        });
+    }, 1);
+}
+
+var chart;
+
+var option = {
+    animation: false,
+    color: ['green', 'lightblue', 'red', 'orange'],
+    legend: {
+        data: ['Temperature', 'Humidity', 'Ppm', 'Voc']
+      },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross'
+       }
+    },
+    xAxis: {
+        type: 'time'
+    },
+    yAxis: [
+        {
+            type: 'value',
+            scale: true,
+            position: 'left'
+        },
+        {
+            type: 'value',
+            scale: true,
+            position: 'left',
+            offset: 30,
+        },
+        {
+            type: 'value',
+            name: 'Ppm',
+            scale: true,
+            position: 'right'
+        },
+        {
+            type: 'value',
+            name: 'Voc',
+            scale: true,
+            position: 'left',
+            offset: 60,
+        }
+    ],
+    dataZoom: [
+        {
+            type: 'slider'
+        },
+        {
+            type: 'inside'
+        }
+    ],
+    title: [
+        {
+            text: 'Sensor data'
+        }
+    ],
+    series: [
+        {
+            name: 'Temperature',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: chartData.temperature,
+            yAxisIndex: 0
+        },
+        {
+            name: 'Humidity',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: chartData.humidity,
+            yAxisIndex: 1
+        },
+        {
+            name: 'Ppm',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: chartData.ppm,
+            yAxisIndex: 2
+        },
+        {
+            name: 'Voc',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: chartData.voc,
+            yAxisIndex: 3
+        }
+    ]
+};
+
+window.addEventListener("load", function() {
+    chart = echarts.init(document.getElementById('chart'));
+    chart.setOption(option);
+    window.onresize = function() {
+        chart.resize();
+    }
+});
 </script>
 </html>

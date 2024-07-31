@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="header">
+    <meta name="color-scheme" content="dark light">
+    <link rel="stylesheet" href="/css/site.css" />
+
     <script src="https://unpkg.com/htmx.org@2.0.1"></script>
     <script th:inline="javascript">
         var csrfToken = [[${_csrf.token}]];

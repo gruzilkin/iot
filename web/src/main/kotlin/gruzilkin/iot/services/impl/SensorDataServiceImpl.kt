@@ -6,6 +6,7 @@ import gruzilkin.iot.repositories.SensorDataRepository
 import gruzilkin.iot.repositories.SensorDataRepository.SensorDataProjection
 import gruzilkin.iot.services.DeviceService
 import gruzilkin.iot.services.SensorDataService
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.security.Principal
 import java.time.Instant
@@ -39,6 +40,6 @@ class SensorDataServiceImpl(
         if (!deviceService.canAccess(user, deviceId)) {
             throw IllegalArgumentException("Access denied")
         }
-        return sensorDataRepository.findByDeviceIdAndSensorName(deviceId, sensorName)
+        return sensorDataRepository.findByDeviceIdAndSensorName(deviceId, sensorName, Sort.by(Sort.Order.asc("receivedAt")))
     }
 }

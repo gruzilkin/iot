@@ -5,17 +5,17 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
-import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.jdbc.Sql
 import kotlin.test.assertNotNull
 
 @DataJpaTest
+@Sql("/cleanup.sql")
 class DeviceRepositoryTest {
 
     @Autowired
     lateinit var deviceRepository: DeviceRepository
 
     @Test
-    @DirtiesContext
     fun `should save device`() {
         val device = Device(userId = 1, name = "test")
         val savedDevice = deviceRepository.save(device)
@@ -25,7 +25,6 @@ class DeviceRepositoryTest {
     }
 
     @Test
-    @DirtiesContext
     fun `findAllByUserIdOrderById should work`() {
         deviceRepository.save(Device(userId = 1, name = "test"))
         deviceRepository.save(Device(userId = 1, name = "test2"))

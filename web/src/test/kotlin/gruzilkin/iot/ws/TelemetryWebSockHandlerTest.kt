@@ -4,6 +4,7 @@ import gruzilkin.iot.BaseTestClass
 import gruzilkin.iot.repositories.SensorDataRepository
 import gruzilkin.iot.services.DeviceService
 import gruzilkin.iot.services.SensorDataService
+import org.junit.jupiter.api.Disabled
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.whenever
@@ -12,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.annotation.DirtiesContext
+import org.springframework.test.context.jdbc.Sql
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketHttpHeaders
 import org.springframework.web.socket.WebSocketSession
@@ -21,13 +23,13 @@ import java.net.URI
 import java.security.Principal
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@Ignore
+@Disabled
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql("/cleanup.sql")
 class TelemetryWebSockHandlerTest : BaseTestClass() {
     @LocalServerPort
     var port: Int = 0
@@ -42,7 +44,6 @@ class TelemetryWebSockHandlerTest : BaseTestClass() {
     lateinit var deviceService: DeviceService
 
     @Test
-    @DirtiesContext
     fun testWebSocketInteraction() {
         // state preparation
         val user = Principal { "1" }
