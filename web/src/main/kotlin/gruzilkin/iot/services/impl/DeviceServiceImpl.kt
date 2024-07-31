@@ -9,10 +9,16 @@ import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.Principal
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Transactional
 class DeviceServiceImpl (val entityManager: EntityManager, val devicesRepository: DeviceRepository, val tokenRepository: TokenRepository) : DeviceService {
+    override fun canAccess(user: Principal, id: Long): Boolean {
+        var device = devicesRepository.findById(id).getOrNull() ?: return false
+        return device.userId == user.name.toLong()
+    }
+
     override fun findAll(user: Principal): List<Device> {
         val devices = devicesRepository.findAllByUserIdOrderById(user.name.toLong())
         devices.forEach(entityManager::detach)

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.0/dist/echarts.min.js"
+            integrity="sha256-K7QvUcgMJTtzv+fWKp0Bcp+sA6JihMs7BGHDigKFu9o=" crossorigin="anonymous"></script>
+    <th:block th:include="~{header :: header}"/>
+</head>
+<body>
+<div class="dashboard">
+    <div id="ppm" class="item"></div>
+    <div id="voc" class="item"></div>
+    <div id="temperature" class="item"></div>
+    <div id="humidity" class="item"></div>
+</div>
+<div id="chart" class="chart"></div>
+</body>
+<script th:inline="javascript">
+    var chartData = {temperature: [], humidity: [], ppm: [], voc: []}
+    chartData.temperature = [[${temperature}}]]
+</script>
+</html>

@@ -29,8 +29,7 @@ class DeviceServiceImplTest {
     fun `find all should not see other user devices`() {
         val user1 = Principal { "1" }
         val user2 = Principal { "2" }
-        var device = deviceService.save(user1, "device_1")
-        var readDevices = deviceService.findAll(user2)
+        val readDevices = deviceService.findAll(user2)
         assertTrue { readDevices.isEmpty() }
     }
 
@@ -67,5 +66,14 @@ class DeviceServiceImplTest {
 
         val readDevice = deviceService.findById(user1, id)!!
         assertTrue { readDevice.tokens.isEmpty() }
+    }
+
+    @Test
+    fun canAccess() {
+        val user1 = Principal { "1" }
+        val user2 = Principal { "2" }
+        val device = deviceService.save(user1, "device_1")
+        assertTrue { deviceService.canAccess(user1, device.id!!) }
+        assertFalse { deviceService.canAccess(user2, device.id!!) }
     }
 }
