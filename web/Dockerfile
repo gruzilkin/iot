@@ -4,7 +4,7 @@
 FROM maven:3-eclipse-temurin-17 as dependencies
 WORKDIR /app
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline -DincludeScope=test
 
 # Build stage
 FROM maven:3-eclipse-temurin-17 as build
