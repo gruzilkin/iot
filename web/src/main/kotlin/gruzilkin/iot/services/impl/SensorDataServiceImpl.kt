@@ -3,6 +3,7 @@ package gruzilkin.iot.services.impl
 import gruzilkin.iot.entities.SensorData
 import gruzilkin.iot.queue.SensorDataEvent
 import gruzilkin.iot.repositories.SensorDataRepository
+import gruzilkin.iot.repositories.SensorDataRepository.SensorDataProjection
 import gruzilkin.iot.services.DeviceService
 import gruzilkin.iot.services.SensorDataService
 import org.springframework.stereotype.Service
@@ -34,10 +35,10 @@ class SensorDataServiceImpl(
             }.toList()
     }
 
-    override fun readData(user: Principal, deviceId: Long, sensorName: String): List<Array<Any>> {
+    override fun readData(user: Principal, deviceId: Long, sensorName: String): List<SensorDataProjection> {
         if (!deviceService.canAccess(user, deviceId)) {
             throw IllegalArgumentException("Access denied")
         }
-        return sensorDataRepository.readData(deviceId, sensorName)
+        return sensorDataRepository.findByDeviceIdAndSensorName(deviceId, sensorName)
     }
 }
