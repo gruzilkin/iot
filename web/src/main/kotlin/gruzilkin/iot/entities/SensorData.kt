@@ -3,7 +3,8 @@ package gruzilkin.iot.entities
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
-@Entity(name = "sensor_data")
+@Entity
+@Table(name = "sensor_data")
 data class SensorData(
     @Id
     @Column(name = "id")

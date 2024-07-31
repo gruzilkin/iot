@@ -3,10 +3,12 @@ package gruzilkin.iot.entities
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.Table
 import java.time.LocalDateTime
 import java.util.UUID
 
-@Entity(name = "access_tokens")
+@Entity
+@Table(name = "access_tokens")
 data class Token (
     @Id
     @Column(name = "token")

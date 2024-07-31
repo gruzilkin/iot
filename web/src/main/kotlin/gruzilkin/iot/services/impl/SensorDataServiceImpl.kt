@@ -23,4 +23,11 @@ class SensorDataServiceImpl(
             )
         )
     }
+
+    override fun getDistinctDeviceSensorPairs(): List<SensorDataService.DeviceSensorPair> {
+        return sensorDataRepository.findDistinctDeviceIdAndSensorName()
+            .map {
+                SensorDataService.DeviceSensorPair(it[0] as Long, it[1] as String)
+            }.toList()
+    }
 }

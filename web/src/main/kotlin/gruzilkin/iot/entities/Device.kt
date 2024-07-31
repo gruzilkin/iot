@@ -2,7 +2,8 @@ package gruzilkin.iot.entities
 
 import jakarta.persistence.*
 
-@Entity(name = "devices")
+@Entity
+@Table(name = "devices")
 data class Device(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
