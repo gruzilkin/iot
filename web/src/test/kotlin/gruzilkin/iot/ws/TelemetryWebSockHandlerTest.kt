@@ -61,11 +61,9 @@ class TelemetryWebSockHandlerTest : BaseTestClass() {
             }
         }
         val url = URI("ws://localhost:$port/ws/telemetry")
-        val header = object : WebSocketHttpHeaders() {
-            init {
+        val header =  WebSocketHttpHeaders().apply {
                 add("Authorization", "Bearer $token")
             }
-        }
 
         doAnswer { invocation ->
             invocation.callRealMethod()
@@ -93,10 +91,8 @@ class TelemetryWebSockHandlerTest : BaseTestClass() {
         val latch = CountDownLatch(1)
 
         val url = URI("ws://localhost:$port/ws/telemetry")
-        val header = object : WebSocketHttpHeaders() {
-            init {
-                add("Authorization", "Bearer non-existing-token")
-            }
+        val header =  WebSocketHttpHeaders().apply {
+            add("Authorization", "Bearer non-existing-token")
         }
 
         var errorMessage: String? = null
