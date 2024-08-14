@@ -6,3 +6,5 @@ CREATE TABLE sensor_data (
     received_at timestamp with time zone NOT NULL,
     FOREIGN KEY (device_id) REFERENCES devices(device_id) ON DELETE CASCADE
 );
+CREATE INDEX sensor_data_device_sensor_idx ON sensor_data(device_id, sensor_name);
+CREATE INDEX sensor_data_received_at_idx ON sensor_data(received_at);

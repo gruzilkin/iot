@@ -40,6 +40,7 @@ class SensorDataServiceImpl(
         if (!deviceService.canAccess(user, deviceId)) {
             throw IllegalArgumentException("Access denied")
         }
-        return sensorDataRepository.findByDeviceIdAndSensorName(deviceId, sensorName, Sort.by(Sort.Order.asc("receivedAt")))
+        val data = sensorDataRepository.smartFindByDeviceIdAndSensorName(deviceId, sensorName, 3000)
+        return data.sortedBy { it.receivedAt }
     }
 }
