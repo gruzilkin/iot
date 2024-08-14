@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   queue:
     image: rabbitmq:3.13
@@ -16,6 +15,17 @@ services:
       - .env
     volumes:
         - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  db_optimizer:
+    build: ./db_optimizer
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_HOST=db
+    depends_on:
+      - db
     restart: unless-stopped
 
   web:
