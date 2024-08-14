@@ -24,7 +24,7 @@ class SensorDataServiceImpl(
                 deviceId = sensorDataEvent.deviceId,
                 sensorName = sensorDataEvent.sensorName,
                 sensorValue = sensorDataEvent.sensorValue,
-                receivedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(sensorDataEvent.receivedAt), ZoneOffset.UTC)
+                receivedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(sensorDataEvent.receivedAt), ZoneOffset.systemDefault())
             )
         )
     }
