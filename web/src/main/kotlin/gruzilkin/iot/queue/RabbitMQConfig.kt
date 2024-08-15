@@ -4,8 +4,11 @@ import org.springframework.amqp.core.Binding
 import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.core.TopicExchange
+import org.springframework.amqp.rabbit.core.RabbitAdmin
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+
 
 @Configuration
 class RabbitMQConfig {
@@ -22,5 +25,10 @@ class RabbitMQConfig {
     @Bean
     fun binding(queue: Queue, exchange: TopicExchange): Binding {
         return BindingBuilder.bind(queue).to(exchange).with("sensor.data.#")
+    }
+
+    @Bean
+    fun rabbitAdmin(rabbitTemplate: RabbitTemplate): RabbitAdmin {
+        return RabbitAdmin(rabbitTemplate)
     }
 }

@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import gruzilkin.iot.queue.SensorDataEvent
 import org.springframework.amqp.core.Message
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
