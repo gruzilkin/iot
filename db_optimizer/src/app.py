@@ -34,14 +34,28 @@ def fetch_tail(connection, device_id, sensor_name, include_timestamp=False):
 					FROM sensor_data
 					JOIN sensor_data_weights USING (id)
 					WHERE device_id = %s AND sensor_name = %s
-					AND received_at > (SELECT last_received_at - interval '5 minute'  FROM last_received_at)
+					AND received_at > (SELECT last_received_at - interval '15 minute'  FROM last_received_at)
 					ORDER BY weight DESC
 					LIMIT 1
 				)
 				SELECT id, sensor_value {', received_at ' if include_timestamp else ''}
 				FROM sensor_data
-				WHERE device_id = %s AND sensor_name = %s AND id >= COALESCE((SELECT id FROM last_peak), 0)"""
+				WHERE device_id = %s AND sensor_name = %s AND id >= COALESCE((SELECT id FROM last_peak), 0)
+				ORDER BY received_at ASC"""
 		cursor.execute(sql, (device_id, sensor_name, device_id, sensor_name, device_id, sensor_name))
+		
+		columns = ['id', 'sensor_value']
+		if include_timestamp:
+			columns.append('received_at')
+		return pd.DataFrame.from_records(cursor.fetchall(), index=['id'], columns=columns)
+      
+def fetch(connection, device_id, sensor_name, include_timestamp=False):
+	with connection.cursor() as cursor:
+		sql = f"""SELECT id, sensor_value {', received_at ' if include_timestamp else ''} 
+			FROM sensor_data
+			WHERE device_id = %s AND sensor_name = %s
+			ORDER BY received_at ASC"""
+		cursor.execute(sql, (device_id, sensor_name))
 		
 		columns = ['id', 'sensor_value']
 		if include_timestamp:
@@ -55,11 +69,11 @@ def remove_old_data(connection):
 		WHERE received_at < now() - interval '1 week'""")
 
 
-def update_weight(connection, series):
+def update_weight(connection, series, overwrite_with_higher_weights_only = True):
 	with connection.cursor() as cursor:
 		sql = f"""INSERT INTO sensor_data_weights (id, weight) VALUES %s
 		ON CONFLICT (id) DO UPDATE SET weight = EXCLUDED.weight
-		WHERE sensor_data_weights.weight < EXCLUDED.weight"""
+		{'WHERE sensor_data_weights.weight < EXCLUDED.weight' if overwrite_with_higher_weights_only else ''}"""
 		data = [(id, weight) for id, weight in series.items()]
 		psycopg2.extras.execute_values(cursor, sql, data)
 
@@ -114,12 +128,15 @@ def calculate_weights_for_series(series):
     return pd.Series(index=series.index, data=weight)
 
 
-def process_weights():
+def process_weights(recalculate = True):
     with create_connection() as connection:
         remove_old_data(connection)
         sensor_streams = fetch_devices(connection)
         for device_id, sensor_name in sensor_streams:
-            df = fetch_tail(connection, device_id, sensor_name)
+            if recalculate:
+                df = fetch(connection, device_id, sensor_name)
+            else:
+                df = fetch_tail(connection, device_id, sensor_name)
             
             print(f"{device_id}/{sensor_name} tail length {len(df)}")
             
@@ -130,19 +147,24 @@ def process_weights():
             
             weights = calculate_weights_for_series(df.sensor_value)
             weights = weights[weights > 0]
-            update_weight(connection, weights)
+            update_weight(connection, weights, overwrite_with_higher_weights_only = not recalculate)
         connection.commit()
 
 
-async def calculate_weights_worker():
+async def calculate_tail_worker():
     while True:
-        process_weights()
+        process_weights(recalculate = False)
         await asyncio.sleep(60)
+
+async def recalculate_worker():
+    while True:
+        process_weights(recalculate = True)
+        await asyncio.sleep(60 * 60)
 
 
 async def main():
     try:
-        coros = [calculate_weights_worker()]
+        coros = [calculate_tail_worker(), recalculate_worker()]
         tasks = [asyncio.create_task(coro) for coro in coros]
         await asyncio.gather(*tasks)
     finally:
