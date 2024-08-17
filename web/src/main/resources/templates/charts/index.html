@@ -23,125 +23,180 @@
 </script>
 
 <script type="application/javascript">
-function renderChart() {
-    setTimeout(function () {
-        chart.setOption({
-            series: [
-                {
-                    data: chartData.temperature
-                },
-                {
-                    data: chartData.humidity
-                },
-                {
-                    data: chartData.ppm
-                },
-                {
-                    data: chartData.voc
-                }
-            ]
-        });
-    }, 1);
-}
+    var renderTaskId;
 
-var chart;
-
-var option = {
-    animation: false,
-    color: ['green', 'lightblue', 'red', 'orange'],
-    legend: {
-        data: ['Temperature', 'Humidity', 'Ppm', 'Voc']
-      },
-    tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-            type: 'cross'
-       }
-    },
-    xAxis: {
-        type: 'time'
-    },
-    yAxis: [
-        {
-            type: 'value',
-            scale: true,
-            position: 'left'
-        },
-        {
-            type: 'value',
-            scale: true,
-            position: 'left',
-            offset: 30,
-        },
-        {
-            type: 'value',
-            name: 'Ppm',
-            scale: true,
-            position: 'right'
-        },
-        {
-            type: 'value',
-            name: 'Voc',
-            scale: true,
-            position: 'left',
-            offset: 60,
+    function renderChart() {
+        if (renderTaskId) {
+            clearTimeout(renderTaskId);
         }
-    ],
-    dataZoom: [
-        {
-            type: 'slider'
-        },
-        {
-            type: 'inside'
-        }
-    ],
-    title: [
-        {
-            text: 'Sensor data'
-        }
-    ],
-    series: [
-        {
-            name: 'Temperature',
-            type: 'line',
-            showSymbol: false,
-            hoverAnimation: false,
-            data: chartData.temperature,
-            yAxisIndex: 0
-        },
-        {
-            name: 'Humidity',
-            type: 'line',
-            showSymbol: false,
-            hoverAnimation: false,
-            data: chartData.humidity,
-            yAxisIndex: 1
-        },
-        {
-            name: 'Ppm',
-            type: 'line',
-            showSymbol: false,
-            hoverAnimation: false,
-            data: chartData.ppm,
-            yAxisIndex: 2
-        },
-        {
-            name: 'Voc',
-            type: 'line',
-            showSymbol: false,
-            hoverAnimation: false,
-            data: chartData.voc,
-            yAxisIndex: 3
-        }
-    ]
-};
-
-window.addEventListener("load", function() {
-    chart = echarts.init(document.getElementById('chart'));
-    chart.setOption(option);
-    window.onresize = function() {
-        chart.resize();
+        renderTaskId = setTimeout(function () {
+            chart.setOption({
+                series: [
+                    {
+                        data: chartData.temperature
+                    },
+                    {
+                        data: chartData.humidity
+                    },
+                    {
+                        data: chartData.ppm
+                    },
+                    {
+                        data: chartData.voc
+                    }
+                ]
+            });
+        }, 1);
     }
-});
+
+    var chart;
+
+    var option = {
+        animation: false,
+        color: ['green', 'lightblue', 'red', 'orange'],
+        legend: {
+            data: ['Temperature', 'Humidity', 'Ppm', 'Voc']
+          },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross'
+           }
+        },
+        xAxis: {
+            type: 'time'
+        },
+        yAxis: [
+            {
+                type: 'value',
+                scale: true,
+                position: 'left'
+            },
+            {
+                type: 'value',
+                scale: true,
+                position: 'left',
+                offset: 30,
+            },
+            {
+                type: 'value',
+                name: 'Ppm',
+                scale: true,
+                position: 'right'
+            },
+            {
+                type: 'value',
+                name: 'Voc',
+                scale: true,
+                position: 'left',
+                offset: 60,
+            }
+        ],
+        dataZoom: [
+            {
+                type: 'slider'
+            },
+            {
+                type: 'inside'
+            }
+        ],
+        title: [
+            {
+                text: 'Sensor data'
+            }
+        ],
+        series: [
+            {
+                name: 'Temperature',
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: chartData.temperature,
+                yAxisIndex: 0
+            },
+            {
+                name: 'Humidity',
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: chartData.humidity,
+                yAxisIndex: 1
+            },
+            {
+                name: 'Ppm',
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: chartData.ppm,
+                yAxisIndex: 2
+            },
+            {
+                name: 'Voc',
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: chartData.voc,
+                yAxisIndex: 3
+            }
+        ]
+    };
+
+    window.addEventListener("load", function() {
+        chart = echarts.init(document.getElementById('chart'));
+        chart.setOption(option);
+        window.onresize = function() {
+            chart.resize();
+        }
+    });
+
+    window.addEventListener("load", function() {
+        renderChart();
+
+        chart.on('datazoom', function(event) {
+        if (event.batch)
+        {
+            event = event.batch[0]
+        }
+
+        var start = parseInt(chart.getOption().dataZoom[0].startValue)
+        var end = parseInt(chart.getOption().dataZoom[0].endValue)
+
+        scheduleFetchUpdates(start, end)
+    })
+    });
+
+    var fetchUpdateTaskId;
+    function scheduleFetchUpdates(start, end) {
+        if (fetchUpdateTaskId) {
+            clearTimeout(fetchUpdateTaskId);
+        }
+        fetchUpdateTaskId = setTimeout(function () {
+            fetchUpdates(start, end)
+        }, 100);
+    }
+
+    function fetchUpdates(start, end) {
+        fetch(`${window.location.pathname}/partial?start=${start}&end=${end}`)
+        .then(function (response) {
+            response.json().then(function(data) {
+                mergeUpdates(data)
+                console.log(data)
+            })
+        });
+    }
+
+    function mergeUpdates(updateData) {
+        var properties = ['temperature', 'humidity', 'ppm', 'voc']
+
+        for (var property of properties) {
+            var tmp = new Map()
+            chartData[property].forEach(e => tmp.set(e[0], e[1]))
+            updateData[property].forEach(e => tmp.set(e[0], e[1]))
+            chartData[property] = []
+            for(var timestamp of [...tmp.keys()].sort()) {chartData[property].push([timestamp, tmp.get(timestamp)])}
+        }
+
+        renderChart();
+    }
 </script>
 </html>

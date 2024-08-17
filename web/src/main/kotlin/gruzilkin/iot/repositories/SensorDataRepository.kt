@@ -22,17 +22,20 @@ interface SensorDataRepository : JpaRepository<SensorData, Int> {
     @Query("""(SELECT sensor_value as sensorValue, received_at as receivedAt
 				FROM sensor_data
 				WHERE device_id = :deviceId AND sensor_name = :sensorName
+                AND received_at >= :start AND received_at <= :end 
 				ORDER BY id ASC LIMIT 1)
 				UNION
 				(SELECT sensor_value as sensorValue, received_at as receivedAt
 				FROM sensor_data
 				JOIN sensor_data_weights USING (id)
 				WHERE device_id = :deviceId AND sensor_name = :sensorName
+                AND received_at >= :start AND received_at <= :end
 				ORDER BY weight DESC LIMIT :limit)
 				UNION
 				(SELECT sensor_value as sensorValue, received_at as receivedAt
 				FROM sensor_data
 				WHERE device_id = :deviceId AND sensor_name = :sensorName
+                AND received_at >= :start AND received_at <= :end
 				ORDER BY id DESC LIMIT 1)""", nativeQuery = true)
-    fun smartFindByDeviceIdAndSensorName(@Param("deviceId") deviceId: Long, @Param("sensorName") sensorName: String, @Param("limit") limit: Int): List<SensorDataProjection>
+    fun smartFindByDeviceIdAndSensorName(@Param("deviceId") deviceId: Long, @Param("sensorName") sensorName: String, @Param("start") start: LocalDateTime, @Param("end") end: LocalDateTime, @Param("limit") limit: Int): List<SensorDataProjection>
 }
