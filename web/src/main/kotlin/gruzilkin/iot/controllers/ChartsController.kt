@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
-import java.math.BigDecimal
 import java.math.RoundingMode
 import java.security.Principal
 import java.time.Instant
@@ -22,36 +21,41 @@ class ChartsController(
 ) {
     @GetMapping("/{deviceId}")
     fun index(user: Principal, @PathVariable("deviceId") deviceId: Long,  model: Model): String {
-        for (sensorName in listOf("temperature", "humidity", "voc", "ppm")) {
-            val start = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC)
-            val end = LocalDateTime.now()
-            val data = sensorDataService.readData(user, deviceId, sensorName, start, end, 1000)
-            val forJson = data.map {
-                arrayOf(
-                    it.receivedAt.toInstant(ZoneOffset.UTC).toEpochMilli(),
-                    BigDecimal.valueOf(it.sensorValue).setScale(3, RoundingMode.FLOOR).toDouble()
+        val start = Instant.ofEpochMilli(0)
+        val end = Instant.now()
+        val sensorNames= listOf("temperature", "humidity", "voc", "ppm")
+
+        val data = sensorDataService.readData(user, deviceId, sensorNames, start, end, 100)
+        for ((sensorName, list) in data) {
+            val forJson = list.map {
+                listOf(
+                    it.first.toEpochMilli(),
+                    it.second.setScale(3, RoundingMode.FLOOR).toDouble()
                 )
-            }.toList()
+            }
             model.addAttribute(sensorName, forJson)
         }
+
         return "charts/index"
     }
 
     @GetMapping("/{deviceId}/partial")
     fun partial(user: Principal, @PathVariable("deviceId") deviceId: Long, @RequestParam("start") start: Long, @RequestParam("end") end: Long): ResponseEntity<Any> {
-        val response = mutableMapOf<String, Any>()
-        for (sensorName in listOf("temperature", "humidity", "voc", "ppm")) {
-            val startTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(start), ZoneOffset.UTC)
-            val endTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(end), ZoneOffset.UTC)
-            val data = sensorDataService.readData(user, deviceId, sensorName, startTime, endTime, 100)
-            val forJson = data.map {
-                arrayOf(
-                    it.receivedAt.toInstant(ZoneOffset.UTC).toEpochMilli(),
-                    BigDecimal.valueOf(it.sensorValue).setScale(3, RoundingMode.FLOOR).toDouble()
+        val startTime = Instant.ofEpochMilli(start)
+        val endTime = Instant.ofEpochMilli(end)
+        val sensorNames= listOf("temperature", "humidity", "voc", "ppm")
+
+        val response = mutableMapOf<String, List<List<*>>>()
+        val data = sensorDataService.readData(user, deviceId, sensorNames, startTime, endTime, 100)
+        for ((sensorName, list) in data) {
+            response[sensorName] = list.map {
+                listOf(
+                    it.first.toEpochMilli(),
+                    it.second.setScale(3, RoundingMode.FLOOR).toDouble()
                 )
-            }.toList()
-            response[sensorName] = forJson
+            }
         }
+
         return ResponseEntity.ok(response)
     }
 }
