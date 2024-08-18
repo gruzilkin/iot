@@ -25,7 +25,7 @@ class ChartsController(
         val end = Instant.now()
         val sensorNames= listOf("temperature", "humidity", "voc", "ppm")
 
-        val data = sensorDataService.readData(user, deviceId, sensorNames, start, end, 100)
+        val data = sensorDataService.readData(user, deviceId, sensorNames, start, end, 1000)
         for ((sensorName, list) in data) {
             val forJson = list.map {
                 listOf(
@@ -46,7 +46,7 @@ class ChartsController(
         val sensorNames= listOf("temperature", "humidity", "voc", "ppm")
 
         val response = mutableMapOf<String, List<List<*>>>()
-        val data = sensorDataService.readData(user, deviceId, sensorNames, startTime, endTime, 100)
+        val data = sensorDataService.readData(user, deviceId, sensorNames, startTime, endTime, 1000)
         for ((sensorName, list) in data) {
             response[sensorName] = list.map {
                 listOf(
