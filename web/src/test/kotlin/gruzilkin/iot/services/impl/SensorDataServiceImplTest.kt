@@ -5,6 +5,7 @@ import gruzilkin.iot.services.SensorDataService
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import java.math.BigDecimal
 
 @SpringBootTest
 class SensorDataServiceImplTest {
@@ -17,7 +18,7 @@ class SensorDataServiceImplTest {
             SensorDataEvent(
                 deviceId = 1,
                 sensorName = "sensor_1",
-                sensorValue = 1.0,
+                sensorValue = BigDecimal.valueOf(1),
                 receivedAt = 1
             )
         )
@@ -25,7 +26,7 @@ class SensorDataServiceImplTest {
             SensorDataEvent(
                 deviceId = 1,
                 sensorName = "sensor_1",
-                sensorValue = 2.0,
+                sensorValue = BigDecimal.valueOf(2),
                 receivedAt = 2
             )
         )
@@ -33,7 +34,7 @@ class SensorDataServiceImplTest {
             SensorDataEvent(
                 deviceId = 2,
                 sensorName = "sensor_1",
-                sensorValue = 3.0,
+                sensorValue = BigDecimal.valueOf(3),
                 receivedAt = 3
             )
         )
@@ -41,7 +42,7 @@ class SensorDataServiceImplTest {
             SensorDataEvent(
                 deviceId = 2,
                 sensorName = "sensor_2",
-                sensorValue = 4.0,
+                sensorValue = BigDecimal.valueOf(4),
                 receivedAt = 4
             )
         )

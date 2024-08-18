@@ -1,9 +1,11 @@
 package gruzilkin.iot.services
 
 import gruzilkin.iot.queue.SensorDataEvent
-import gruzilkin.iot.repositories.SensorDataRepository.SensorDataProjection
+import gruzilkin.iot.repositories.CustomSensorDataRepository
+import gruzilkin.iot.repositories.SensorDataRepository
+import java.math.BigDecimal
 import java.security.Principal
-import java.time.LocalDateTime
+import java.time.Instant
 
 interface SensorDataService {
     fun saveSensorData(sensorDataEvent: SensorDataEvent)
@@ -11,5 +13,5 @@ interface SensorDataService {
     data class DeviceSensorPair(val deviceId: Long, val sensorName: String )
     fun getDistinctDeviceSensorPairs(): List<DeviceSensorPair>
 
-    fun readData(user: Principal, deviceId: Long, sensorName: String, start: LocalDateTime, end: LocalDateTime, limit: Int): List<SensorDataProjection>
+    fun readData(user: Principal, deviceId: Long, sensorNames: List<String>, start: Instant, end: Instant, limit: Int): Map<String, List<CustomSensorDataRepository.Point>>
 }

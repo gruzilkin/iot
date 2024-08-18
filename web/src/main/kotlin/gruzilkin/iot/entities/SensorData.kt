@@ -1,7 +1,8 @@
 package gruzilkin.iot.entities
 
 import jakarta.persistence.*
-import java.time.LocalDateTime
+import java.math.BigDecimal
+import java.time.Instant
 
 @Entity
 @Table(name = "sensor_data")
@@ -18,8 +19,8 @@ data class SensorData(
     val sensorName: String = "",
 
     @Column(name = "sensor_value")
-    val sensorValue: Double = 0.0,
+    val sensorValue: BigDecimal = BigDecimal.ZERO,
 
     @Column(name = "received_at")
-    val receivedAt: LocalDateTime = LocalDateTime.now()
+    val receivedAt: Instant = Instant.now()
 )

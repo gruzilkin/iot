@@ -2,11 +2,13 @@ package gruzilkin.iot.services.impl
 
 import gruzilkin.iot.entities.SensorData
 import gruzilkin.iot.queue.SensorDataEvent
+import gruzilkin.iot.repositories.CustomSensorDataRepository
 import gruzilkin.iot.repositories.SensorDataRepository
-import gruzilkin.iot.repositories.SensorDataRepository.SensorDataProjection
 import gruzilkin.iot.services.DeviceService
 import gruzilkin.iot.services.SensorDataService
+import kotlinx.coroutines.*
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 import java.security.Principal
 import java.time.Instant
 import java.time.LocalDateTime
@@ -23,7 +25,7 @@ class SensorDataServiceImpl(
                 deviceId = sensorDataEvent.deviceId,
                 sensorName = sensorDataEvent.sensorName,
                 sensorValue = sensorDataEvent.sensorValue,
-                receivedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(sensorDataEvent.receivedAt), ZoneOffset.systemDefault())
+                receivedAt = Instant.ofEpochMilli(sensorDataEvent.receivedAt)
             )
         )
     }
@@ -35,11 +37,26 @@ class SensorDataServiceImpl(
             }.toList()
     }
 
-    override fun readData(user: Principal, deviceId: Long, sensorName: String, start: LocalDateTime, end: LocalDateTime, limit: Int): List<SensorDataProjection> {
+    override fun readData(user: Principal, deviceId: Long, sensorNames: List<String>, start: Instant, end: Instant, limit: Int): Map<String, List<CustomSensorDataRepository.Point>> {
         if (!deviceService.canAccess(user, deviceId)) {
             throw IllegalArgumentException("Access denied")
         }
-        val data = sensorDataRepository.smartFindByDeviceIdAndSensorName(deviceId, sensorName, start, end,  limit)
-        return data.sortedBy { it.receivedAt }
+
+        return runBlocking {
+            withContext(Dispatchers.IO) {
+                sensorNames.map { sensorName ->
+                    async {
+                        val data = sensorDataRepository.smartFindByDeviceIdAndSensorName(
+                            deviceId,
+                            sensorName,
+                            start,
+                            end,
+                            limit
+                        ).sortedBy { it.receivedAt }
+                        sensorName to data
+                    }
+                }.awaitAll().toMap()
+            }
+        }
     }
 }
