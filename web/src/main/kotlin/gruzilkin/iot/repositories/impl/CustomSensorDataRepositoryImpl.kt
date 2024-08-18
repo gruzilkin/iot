@@ -19,7 +19,7 @@ class CustomSensorDataRepositoryImpl : CustomSensorDataRepository {
         start: Instant,
         end: Instant,
         limit: Int
-    ): List<CustomSensorDataRepository.Point> {
+    ): List<CustomSensorDataRepository.SensorReading> {
         val query = entityManager.createNativeQuery("""(SELECT sensor_value, received_at
 				FROM sensor_data
 				WHERE device_id = :deviceId AND sensor_name = :sensorName
@@ -54,7 +54,7 @@ class CustomSensorDataRepositoryImpl : CustomSensorDataRepository {
                     throw IllegalStateException("Unexpected type ${time?.javaClass}")
                 }
             }
-            CustomSensorDataRepository.Point(receivedAt, row[0] as BigDecimal)
+            CustomSensorDataRepository.SensorReading(receivedAt, row[0] as BigDecimal)
         }
     }
 }

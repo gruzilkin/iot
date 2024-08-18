@@ -8,11 +8,8 @@ import gruzilkin.iot.services.DeviceService
 import gruzilkin.iot.services.SensorDataService
 import kotlinx.coroutines.*
 import org.springframework.stereotype.Service
-import java.math.BigDecimal
 import java.security.Principal
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 @Service
 class SensorDataServiceImpl(
@@ -37,7 +34,7 @@ class SensorDataServiceImpl(
             }.toList()
     }
 
-    override fun readData(user: Principal, deviceId: Long, sensorNames: List<String>, start: Instant, end: Instant, limit: Int): Map<String, List<CustomSensorDataRepository.Point>> {
+    override fun readData(user: Principal, deviceId: Long, sensorNames: List<String>, start: Instant, end: Instant, limit: Int): Map<String, List<CustomSensorDataRepository.SensorReading>> {
         if (!deviceService.canAccess(user, deviceId)) {
             throw IllegalArgumentException("Access denied")
         }
