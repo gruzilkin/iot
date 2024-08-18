@@ -62,7 +62,7 @@ class RealtimeWebSockHandler(
                 val messageBody = String(message.body)
                 val event = Gson().fromJson(messageBody, SensorDataEvent::class.java)
                 val wsMessage = mapOf(
-                    event.sensorName to BigDecimal.valueOf(event.sensorValue).setScale(3, RoundingMode.FLOOR).toDouble(),
+                    event.sensorName to event.sensorValue.setScale(3, RoundingMode.FLOOR).toDouble(),
                     "receivedAt" to event.receivedAt)
                 session.sendMessage(TextMessage(Gson().toJson(wsMessage)))
             }

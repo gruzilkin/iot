@@ -19,6 +19,7 @@ import org.springframework.web.socket.WebSocketHttpHeaders
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.client.standard.StandardWebSocketClient
 import org.springframework.web.socket.handler.TextWebSocketHandler
+import java.math.BigDecimal
 import java.net.URI
 import java.security.Principal
 import java.util.concurrent.CountDownLatch
@@ -81,7 +82,7 @@ class TelemetryWebSockHandlerTest : BaseTestClass() {
         // assert the saved data
         assertEquals(1, data.size)
         assertEquals("ppm", data[0].sensorName)
-        assertTrue { Math.abs(data[0].sensorValue - 414.1) < 1e-6 }
+        assertEquals(BigDecimal.valueOf(414.1), data[0].sensorValue)
         assertEquals(device.id, data[0].deviceId)
     }
 

@@ -9,6 +9,7 @@ import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
+import java.math.BigDecimal
 import java.time.Instant
 
 @Component
@@ -25,7 +26,7 @@ class TelemetryWebSockHandler(
                 val event = SensorDataEvent(
                     deviceId = deviceId,
                     sensorName = key,
-                    sensorValue = value,
+                    sensorValue = BigDecimal.valueOf(value),
                     receivedAt = Instant.now().toEpochMilli()
                 )
                 rabbitTemplate.send("amq.topic", routingKey, Message(Gson().toJson(event).toByteArray()))

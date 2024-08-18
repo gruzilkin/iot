@@ -5,6 +5,9 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class CustomSensorDataRepositoryImpl : CustomSensorDataRepository {
     @PersistenceContext
@@ -16,7 +19,7 @@ class CustomSensorDataRepositoryImpl : CustomSensorDataRepository {
         start: Instant,
         end: Instant,
         limit: Int
-    ): List<Pair<Instant, BigDecimal>> {
+    ): List<CustomSensorDataRepository.Point> {
         val query = entityManager.createNativeQuery("""(SELECT sensor_value, received_at
 				FROM sensor_data
 				WHERE device_id = :deviceId AND sensor_name = :sensorName
@@ -43,7 +46,15 @@ class CustomSensorDataRepositoryImpl : CustomSensorDataRepository {
         val resultList = query.resultList
         return resultList.map {
             val row = it as Array<*>
-            Pair(row[1] as Instant, row[0] as BigDecimal)
+            val receivedAt = when(val time = row[1]) {
+                is LocalDateTime -> time.toInstant(ZoneOffset.UTC)
+                is OffsetDateTime -> time.toInstant()
+                is Instant -> time
+                else -> {
+                    throw IllegalStateException("Unexpected type ${time?.javaClass}")
+                }
+            }
+            CustomSensorDataRepository.Point(receivedAt, row[0] as BigDecimal)
         }
     }
 }

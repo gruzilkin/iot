@@ -2,6 +2,7 @@ package gruzilkin.iot.services.impl
 
 import gruzilkin.iot.entities.SensorData
 import gruzilkin.iot.queue.SensorDataEvent
+import gruzilkin.iot.repositories.CustomSensorDataRepository
 import gruzilkin.iot.repositories.SensorDataRepository
 import gruzilkin.iot.services.DeviceService
 import gruzilkin.iot.services.SensorDataService
@@ -24,7 +25,7 @@ class SensorDataServiceImpl(
                 deviceId = sensorDataEvent.deviceId,
                 sensorName = sensorDataEvent.sensorName,
                 sensorValue = sensorDataEvent.sensorValue,
-                receivedAt = LocalDateTime.ofInstant(Instant.ofEpochMilli(sensorDataEvent.receivedAt), ZoneOffset.systemDefault())
+                receivedAt = Instant.ofEpochMilli(sensorDataEvent.receivedAt)
             )
         )
     }
@@ -36,7 +37,7 @@ class SensorDataServiceImpl(
             }.toList()
     }
 
-    override fun readData(user: Principal, deviceId: Long, sensorNames: List<String>, start: Instant, end: Instant, limit: Int): Map<String, List<Pair<Instant, BigDecimal>>> {
+    override fun readData(user: Principal, deviceId: Long, sensorNames: List<String>, start: Instant, end: Instant, limit: Int): Map<String, List<CustomSensorDataRepository.Point>> {
         if (!deviceService.canAccess(user, deviceId)) {
             throw IllegalArgumentException("Access denied")
         }
@@ -51,7 +52,7 @@ class SensorDataServiceImpl(
                             start,
                             end,
                             limit
-                        ).sortedBy { it.first }
+                        ).sortedBy { it.receivedAt }
                         sensorName to data
                     }
                 }.awaitAll().toMap()

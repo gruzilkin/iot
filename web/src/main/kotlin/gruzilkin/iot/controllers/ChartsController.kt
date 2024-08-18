@@ -29,8 +29,8 @@ class ChartsController(
         for ((sensorName, list) in data) {
             val forJson = list.map {
                 listOf(
-                    it.first.toEpochMilli(),
-                    it.second.setScale(3, RoundingMode.FLOOR).toDouble()
+                    it.receivedAt.toEpochMilli(),
+                    it.value.setScale(3, RoundingMode.FLOOR).toDouble()
                 )
             }
             model.addAttribute(sensorName, forJson)
@@ -50,8 +50,8 @@ class ChartsController(
         for ((sensorName, list) in data) {
             response[sensorName] = list.map {
                 listOf(
-                    it.first.toEpochMilli(),
-                    it.second.setScale(3, RoundingMode.FLOOR).toDouble()
+                    it.receivedAt.toEpochMilli(),
+                    it.value.setScale(3, RoundingMode.FLOOR).toDouble()
                 )
             }
         }
