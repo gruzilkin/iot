@@ -18,6 +18,6 @@ class WebSocketConfig (
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
         registry.addHandler(telemetryWebSockHandler, "/ws/telemetry")
             .addInterceptors(authenticationHandshakeHandler)
-        registry.addHandler(realtimeWebSockHandler, "/chart/{id}/realtime")
+        registry.addHandler(realtimeWebSockHandler, "/charts/{id}/realtime")
     }
 }

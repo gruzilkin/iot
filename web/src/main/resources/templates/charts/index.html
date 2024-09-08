@@ -23,6 +23,45 @@
 </script>
 
 <script type="application/javascript">
+    function openWebSocket(onmessage) {
+        let wsUri = ((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + window.location.pathname + '/realtime';
+        webSocket = new WebSocket(wsUri);
+        webSocket.onmessage = onmessage;
+    }
+
+    function start() {
+        openWebSocket(function(e) {
+            var message = JSON.parse(e.data)
+            console.log(message)
+
+            if (message.temperature) {
+                let newTemperaturePoint = [message.receivedAt, message.temperature]
+                chartData.temperature.push(newTemperaturePoint)
+                document.getElementById("temperature").innerText = `${message.temperature.toFixed(2)} C`
+            }
+
+            if (message.humidity) {
+                let newHumidityPoint = [message.receivedAt, message.humidity]
+                chartData.humidity.push(newHumidityPoint)
+                document.getElementById("humidity").innerText = `${message.humidity.toFixed(2)} %`
+            }
+
+            if (message.ppm) {
+                let newPpmPoint = [message.receivedAt, message.ppm]
+                chartData.ppm.push(newPpmPoint)
+                document.getElementById("ppm").innerText = `${Math.round(message.ppm)} ppm`
+            }
+
+            if (message.voc) {
+                let newVocPoint = [message.receivedAt, message.voc]
+                chartData.voc.push(newVocPoint)
+                document.getElementById("voc").innerText = message.voc
+            }
+
+            renderChart();
+        });
+    }
+
     var renderTaskId;
 
     function renderChart() {
@@ -151,6 +190,8 @@
 
     window.addEventListener("load", function() {
         renderChart();
+
+        start();
 
         chart.on('datazoom', function(event) {
         if (event.batch)
