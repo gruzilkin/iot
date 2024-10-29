@@ -3,6 +3,9 @@ services:
     image: rabbitmq:3.13
     env_file:
       - .env
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBIT_USER:-user}
+      - RABBITMQ_DEFAULT_PASS=${RABBIT_PASSWORD:-secret}
     volumes:
       - queue_data:/var/lib/rabbitmq
     restart: unless-stopped
@@ -11,19 +14,22 @@ services:
     build: ./db
     ports:
       - "5432:5432"
-    env_file:
-      - .env
+    environment:
+      - POSTGRES_USER=${DB_USER:-user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-secret}
+      - POSTGRES_DB=${DB_NAME:-fileserver}
     volumes:
-        - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   db_optimizer:
     build: ./db_optimizer
-    env_file:
-      - .env
     environment:
       - PYTHONUNBUFFERED=1
       - DB_HOST=db
+      - DB_NAME=${DB_NAME:-fileserver}
+      - DB_USER=${DB_USER:-user}
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
     depends_on:
       - db
     restart: unless-stopped
@@ -36,6 +42,11 @@ services:
     environment:
       - SPRING_RABBITMQ_HOST=queue
       - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=${RABBIT_USER:-user}
+      - SPRING_RABBITMQ_PASSWORD=${RABBIT_PASSWORD:-secret}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${DB_NAME:-fileserver}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER:-user}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-secret}
     ports:
       - "8080:8080"
       - "5005:5005"
@@ -44,5 +55,5 @@ services:
     restart: unless-stopped
 
 volumes:
-    db_data:
-    queue_data:
+  db_data:
+  queue_data:
