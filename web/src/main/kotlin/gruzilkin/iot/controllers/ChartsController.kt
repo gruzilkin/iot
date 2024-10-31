@@ -40,10 +40,15 @@ class ChartsController(
     }
 
     @GetMapping("/{deviceId}/partial")
-    fun partial(user: Principal, @PathVariable("deviceId") deviceId: Long, @RequestParam("start") start: Long, @RequestParam("end") end: Long): ResponseEntity<Any> {
-        val startTime = Instant.ofEpochMilli(start)
-        val endTime = Instant.ofEpochMilli(end)
-        val sensorNames= listOf("temperature", "humidity", "voc", "ppm")
+    fun partial(
+        user: Principal,
+        @PathVariable("deviceId") deviceId: Long,
+        @RequestParam("start", required = false) start: Long?,
+        @RequestParam("end", required = false) end: Long?
+    ): ResponseEntity<Any> {
+        val startTime = start?.let { Instant.ofEpochMilli(it) } ?: Instant.ofEpochMilli(0)
+        val endTime = end?.let { Instant.ofEpochMilli(it) } ?: Instant.now()
+        val sensorNames = listOf("temperature", "humidity", "voc", "ppm")
 
         val response = mutableMapOf<String, List<List<*>>>()
         val data = sensorDataService.readData(user, deviceId, sensorNames, startTime, endTime, 1000)

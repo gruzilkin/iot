@@ -25,6 +25,20 @@
     function openWebSocket(onmessage) {
         let wsUri = ((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + window.location.pathname + '/realtime';
         webSocket = new WebSocket(wsUri);
+
+        // Add event listeners for handling disconnections and reconnections
+        webSocket.onclose = function(event) {
+            console.log("WebSocket connection closed:", event);
+            setTimeout(function() {
+                console.log("Attempting WebSocket reconnection...");
+                openWebSocket(onmessage);
+            }, 5000);
+        };
+
+        webSocket.onerror = function(error) {
+            console.error("WebSocket error:", error);
+        };
+
         webSocket.onmessage = onmessage;
     }
 
@@ -179,6 +193,14 @@
         ]
     };
 
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible' && webSocket.readyState === WebSocket.CLOSED) {
+            console.log("Page became visible and WebSocket is closed. Reconnecting...");
+            openWebSocket(onmessage);
+            fetchUpdates();
+        }
+    });
+
     window.addEventListener("load", function() {
         chart = echarts.init(document.getElementById('chart'));
         chart.setOption(option);
@@ -215,14 +237,22 @@
         }, 100);
     }
 
-    function fetchUpdates(start, end) {
-        fetch(`${window.location.pathname}/partial?start=${start}&end=${end}`)
-        .then(function (response) {
-            response.json().then(function(data) {
-                mergeUpdates(data)
-                console.log(data)
-            })
-        });
+    function fetchUpdates(start = null, end = null) {
+        let url = `${window.location.pathname}/partial`;
+        if (start !== null && end !== null) {
+            url += `?start=${start}&end=${end}`;
+        } else if (start !== null) {
+            url += `?start=${start}`;
+        } else if (end !== null) {
+            url += `?end=${end}`;
+        }
+
+        fetch(url)
+            .then(function (response) {
+                response.json().then(function(data) {
+                    mergeUpdates(data);
+                });
+            });
     }
 
     function mergeUpdates(updateData) {
