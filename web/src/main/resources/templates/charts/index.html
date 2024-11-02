@@ -208,6 +208,13 @@
         window.onresize = function() {
             chart.resize();
         }
+
+        // keep websocket alive
+        setInterval(() => {
+          if (webSocket.readyState === WebSocket.OPEN) {
+            webSocket.ping();
+          }
+        }, 30000);
     });
 
     window.addEventListener("load", function() {
