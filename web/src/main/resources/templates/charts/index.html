@@ -247,12 +247,16 @@
             url += `?end=${end}`;
         }
 
-        fetch(url)
-            .then(function (response) {
+    fetch(url)
+        .then(function (response) {
+            if (response.status !== 200) {
+                location.reload();
+            } else {
                 response.json().then(function(data) {
                     mergeUpdates(data);
                 });
-            });
+            }
+        });
     }
 
     function mergeUpdates(updateData) {
