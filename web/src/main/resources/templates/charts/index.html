@@ -32,6 +32,7 @@
             setTimeout(function() {
                 console.log("Attempting WebSocket reconnection...");
                 openWebSocket(onmessage);
+                fetchUpdates();
             }, 5000);
         };
 
@@ -247,16 +248,17 @@
             url += `?end=${end}`;
         }
 
-    fetch(url)
-        .then(function (response) {
-            if (response.status !== 200) {
-                location.reload();
-            } else {
-                response.json().then(function(data) {
-                    mergeUpdates(data);
-                });
-            }
-        });
+        fetch(url)
+            .then(function(response) {
+                if (response.status === 401) {
+                    console.error("Unauthorized access. Reloading...");
+                    window.location.href = window.location.origin + window.location.pathname;
+                } else {
+                    response.json().then(function(data) {
+                        mergeUpdates(data);
+                    });
+                }
+            })
     }
 
     function mergeUpdates(updateData) {
