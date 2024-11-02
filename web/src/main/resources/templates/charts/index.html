@@ -45,6 +45,11 @@
 
     function start() {
         openWebSocket(function(e) {
+            if (event.data === "pong") {
+                console.log("Received pong from server");
+                return;
+            }
+
             var message = JSON.parse(e.data)
             console.log(message)
 
@@ -212,7 +217,8 @@
         // keep websocket alive
         setInterval(() => {
           if (webSocket.readyState === WebSocket.OPEN) {
-            webSocket.ping();
+            console.log("Sending ping to server");
+            webSocket.send("ping");
           }
         }, 30000);
     });

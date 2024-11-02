@@ -69,4 +69,16 @@ class RealtimeWebSockHandler(
         }
         container.start()
     }
+
+    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
+        val payload = message.payload
+
+        if (payload == "ping") {
+            println("Received ping message. Sending pong.")
+            session.sendMessage(TextMessage("pong"))
+        } else {
+            println("Unexpected message received: $payload. Closing connection.")
+            session.close()
+        }
+    }
 }
