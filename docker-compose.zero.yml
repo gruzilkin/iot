@@ -2,7 +2,6 @@ services:
   zero:
     build: ./zero
     env_file:
-      - .env.default
       - .env
     environment:
       - PYTHONUNBUFFERED=1
