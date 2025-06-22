@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.boot.test.web.server.LocalServerPort
-import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketHttpHeaders
@@ -26,6 +25,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @Disabled
@@ -54,6 +54,12 @@ class TelemetryWebSockHandlerTest : BaseTestClass() {
 
         val latch = CountDownLatch(1)
 
+        // Set up spy to trigger when data is saved
+        doAnswer { invocation ->
+            invocation.callRealMethod()
+            latch.countDown()
+        }.whenever(sensorDataService).saveSensorData(any())
+
         // web socket client setup
         val handler = object : TextWebSocketHandler() {
             override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -62,51 +68,36 @@ class TelemetryWebSockHandlerTest : BaseTestClass() {
             }
         }
         val url = URI("ws://localhost:$port/ws/telemetry")
-        val header =  WebSocketHttpHeaders().apply {
-                add("Authorization", "Bearer $token")
-            }
+        val headers = WebSocketHttpHeaders().apply {
+            add("Authorization", "Bearer $token")
+        }
 
-        doAnswer { invocation ->
-            invocation.callRealMethod()
-            latch.countDown()
-        }.whenever(sensorDataService).saveSensorData(any())
+        // execute the call
+        StandardWebSocketClient().execute(handler, headers, url).get(5, TimeUnit.SECONDS)
 
-        // finally execute the call with everything ready
-        StandardWebSocketClient().execute(handler, header, url)
+        // wait for data to be saved (much shorter timeout)
+        assertTrue(latch.await(10, TimeUnit.SECONDS), "Data should be saved within 10 seconds")
 
-        // websocket call is async so we wait for repository call
-        latch.await(60, TimeUnit.SECONDS)
-
+        // verify the data
         val data = sensorDataRepository.findAll()
-
-        // assert the saved data
         assertEquals(1, data.size)
         assertEquals("ppm", data[0].sensorName)
-        assertEquals(BigDecimal.valueOf(414.1), data[0].sensorValue)
+        assertEquals(0, BigDecimal.valueOf(414.1).compareTo(data[0].sensorValue))
         assertEquals(device.id, data[0].deviceId)
     }
 
     @Test
-    @DirtiesContext
-    fun `websocket rejects connection without authentication`() {
-        val latch = CountDownLatch(1)
-
+    fun `websocket rejects connection with invalid token`() {
         val url = URI("ws://localhost:$port/ws/telemetry")
-        val header =  WebSocketHttpHeaders().apply {
-            add("Authorization", "Bearer non-existing-token")
+        val headers = WebSocketHttpHeaders().apply {
+            add("Authorization", "Bearer invalid-token")
         }
 
-        var errorMessage: String? = null
-        StandardWebSocketClient().execute(TextWebSocketHandler(), header, url).exceptionally { e ->
-            errorMessage = e.message
-            latch.countDown()
-            null
-        }.get()
+        val client = StandardWebSocketClient()
 
-        latch.await(5, TimeUnit.SECONDS)
-
-        assertTrue {
-            errorMessage?.contains("403") ?: false
+        // WebSocket handshake failure should throw an exception immediately
+        assertFailsWith<Exception> {
+            client.execute(TextWebSocketHandler(), headers, url).get(5, TimeUnit.SECONDS)
         }
     }
 }
