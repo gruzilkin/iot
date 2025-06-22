@@ -78,6 +78,11 @@ cd web
 - H2 database for test environment
 - Test files mirror main package structure in `src/test/kotlin`
 
+#### Testing Strategy and Conventions
+- **Integration-heavy approach**: Prefer `@SpringBootTest` integration tests over isolated unit tests to verify component interactions in this Spring Boot application
+- **Test isolation**: Uses `@Sql("/cleanup.sql")` to clear H2 database between tests and `@DirtiesContext` when tests modify bean state
+- **Testcontainers constraints**: Some tests using Testcontainers are disabled to avoid Docker-in-Docker issues during image builds
+
 ## Database Schema
 Key tables include:
 - `devices`: IoT device registration and management
