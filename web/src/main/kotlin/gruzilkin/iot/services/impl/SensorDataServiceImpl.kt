@@ -6,12 +6,14 @@ import gruzilkin.iot.repositories.CustomSensorDataRepository
 import gruzilkin.iot.repositories.SensorDataRepository
 import gruzilkin.iot.services.DeviceService
 import gruzilkin.iot.services.SensorDataService
+import io.micrometer.observation.annotation.Observed
 import kotlinx.coroutines.*
 import org.springframework.stereotype.Service
 import java.security.Principal
 import java.time.Instant
 
 @Service
+@Observed
 class SensorDataServiceImpl(
     val sensorDataRepository: SensorDataRepository,
     val deviceService: DeviceService

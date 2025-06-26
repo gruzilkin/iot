@@ -5,6 +5,7 @@ import gruzilkin.iot.entities.Token
 import gruzilkin.iot.repositories.DeviceRepository
 import gruzilkin.iot.repositories.TokenRepository
 import gruzilkin.iot.services.DeviceService
+import io.micrometer.observation.annotation.Observed
 import jakarta.persistence.EntityManager
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -12,6 +13,7 @@ import java.security.Principal
 import kotlin.jvm.optionals.getOrNull
 
 @Service
+@Observed
 @Transactional
 class DeviceServiceImpl (val entityManager: EntityManager, val devicesRepository: DeviceRepository, val tokenRepository: TokenRepository) : DeviceService {
     override fun canAccess(user: Principal, id: Long): Boolean {
